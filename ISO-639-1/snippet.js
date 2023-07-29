@@ -13,7 +13,21 @@ var result = rows.map((row) => {
 		fr: cols[3].textContent.trim(),
 		de: cols[4].textContent.trim(),
 	};
-});
+}).map(({v1,v2, ...props}) => {
+	const objects = {};
+	const v2Value = v2 || null;
+	if (v2Value) {
+		const versions = Array.from(v2Value.matchAll(/([a-z]+) \((B|T)\)/g));
+		if (versions.length) {
+			versions.forEach((match) => {
+				objects[`v2${match[2]}`] = match[1];
+			});
+			objects.v2 = objects.v2B || objects.v2T;
+		}
+	}
+	
+	return ({...props, v1: v1 || null,v2: v2Value, ...objects})
+}).filter((d,idx, arr) => arr.findIndex(({v2}) => v2 === d.v2) === idx)
 
 var saveFile = (blob, name) => {
 	const a = document.createElement('a');
